@@ -1,17 +1,29 @@
-<%= form_for(@meme) do |f| %>
-  <% if @meme.errors.any? %>
-    <div id="error_explanation">
-      <h2><%= pluralize(@meme.errors.count, "error") %> prohibited this meme from being saved:</h2>
+<div class="ui segment">
+  <%= form_for(@meme, html: {multipart: true, class: 'ui form'}) do |f| %>
+    <!-- <% if @meme.errors.any? %>
+      <div id="error_explanation">
+        <h2><%= pluralize(@meme.errors.count, "error") %> prohibited this meme from being saved:</h2>
 
-      <ul>
-      <% @meme.errors.full_messages.each do |message| %>
-        <li><%= message %></li>
-      <% end %>
-      </ul>
+        <ul>
+        <% @meme.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+        </ul>
+      </div>
+    <% end %> -->
+    <div class="field">
+      <%= f.file_field :picture, class: 'ui input' %>
+    </div>
+    <div class="field">
+      <div class="ui right labeled left icon input">
+        <i class="ui tags icon"></i>
+        <%= f.text_field :tags, placeholder: 'Use commas' %>
+        <div class="ui tag label">Tags</div>
+      </div>
+    </div>
+    <div class="actions">
+      <%= f.submit class: 'ui primary button' %>
+      <%= link_to 'Back', memes_path, class: 'ui button' %>
     </div>
   <% end %>
-  <%= f.text_field :tags %>
-  <div class="actions">
-    <%= f.submit %>
-  </div>
-<% end %>
+<div>
