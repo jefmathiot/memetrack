@@ -4,7 +4,8 @@ class MemesController < ApplicationController
   # GET /memes
   # GET /memes.json
   def index
-    @memes = Meme.all
+    @memes = Meme.order(created_at: :desc)
+    @memes = @memes.all_tags(normalize_tags(params[:q])) if params[:q].present?
   end
 
   # GET /memes/1
@@ -28,10 +29,14 @@ class MemesController < ApplicationController
 
     respond_to do |format|
       if @meme.save
-        format.html { redirect_to @meme, notice: 'Meme was successfully created.' }
+        format.html { redirect_to memes_url,
+          notice: 'The image was successfully saved, yay!' }
         format.json { render :show, status: :created, location: @meme }
       else
-        format.html { render :new }
+        format.html {
+          flash.now[:alert]='Unable to save the image'
+          render :new
+        }
         format.json { render json: @meme.errors, status: :unprocessable_entity }
       end
     end
@@ -42,10 +47,14 @@ class MemesController < ApplicationController
   def update
     respond_to do |format|
       if @meme.update(meme_params)
-        format.html { redirect_to @meme, notice: 'Meme was successfully updated.' }
+        format.html { redirect_to memes_url,
+          notice: 'The tags were successfully updated, yay!' }
         format.json { render :show, status: :ok, location: @meme }
       else
-        format.html { render :edit }
+        format.html {
+          flash.now[:alert]='Unable to save the tags'
+          render :edit
+        }
         format.json { render json: @meme.errors, status: :unprocessable_entity }
       end
     end
@@ -56,7 +65,8 @@ class MemesController < ApplicationController
   def destroy
     @meme.destroy
     respond_to do |format|
-      format.html { redirect_to memes_url, notice: 'Meme was successfully destroyed.' }
+      format.html { redirect_to memes_url,
+        notice: 'The image was successfully destroyed.' }
       format.json { head :no_content }
     end
   end
@@ -69,6 +79,12 @@ class MemesController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def meme_params
-      params[:meme]
+      params[:meme] && params[:meme].tap{|meme|
+        meme[:tags]=normalize_tags(params[:meme][:tags])
+      }.permit(:picture, {tags: []})
+    end
+
+    def normalize_tags(param)
+      (param || '').split(',').map(&:strip)
     end
 end

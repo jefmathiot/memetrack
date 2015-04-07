@@ -1,4 +1,11 @@
-<p id="notice"><%= notice %></p>
-
-<%= link_to 'Edit', edit_meme_path(@meme) %> |
-<%= link_to 'Back', memes_path %>
+<div class="show">
+  <%= image_tag @meme.picture.url %>
+  <div class="ui tags">
+    <i class="tags icon"></i>
+    <%= @meme.tags.any? ? @meme.tags.join(', ') : ''%>
+  </div>
+</div>
+<div class="actions">
+  <%= link_to 'Edit', edit_meme_path(@meme), class: 'ui primary button' %>
+  <%= link_to 'Back', memes_path, class: 'ui button' %>
+</div>

@@ -1,28 +1,64 @@
-<p id="notice"><%= notice %></p>
-
 <h1 class="ui horizontal header divider">
   <i class="camera retro icon"></i>
-  Memes
+  <%= @memes.count %> Memes
 </h1>
-
-<table>
-  <thead>
-    <tr>
-      <th colspan="3"></th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <% @memes.each do |meme| %>
-      <tr>
-        <td><%= link_to 'Show', meme %></td>
-        <td><%= link_to 'Edit', edit_meme_path(meme) %></td>
-        <td><%= link_to 'Destroy', meme, method: :delete, data: { confirm: 'Are you sure?' } %></td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
-
-<br>
-
-<%= link_to 'New Meme', new_meme_path %>
+<%= form_tag(memes_path, method: :get, class: 'ui search form') do %>
+  <div class="ui right labeled left icon input">
+    <i class="tags icon"></i>
+    <%= search_field_tag :q, params[:q], placeholder: 'Filter...' %>
+    <div class="ui tag label">
+      Tags
+    </div>
+  </div>
+<% end %>
+<div class="ui four cards">
+  <div class="new card">
+    <div class="dimmable image">
+      <div class="ui dimmer">
+        <div class="content">
+          <div class="center">
+            <%= link_to 'Add a new entry', new_meme_path,
+              class: 'ui inverted button' %>
+          </div>
+        </div>
+      </div>
+      <%= image_tag 'image_placeholder.png' %>
+    </div>
+    <div class="content">
+      <%= link_to 'Add a new entry', new_meme_path, class: 'header' %>
+    </div>
+  </div>
+  <% @memes.each do |meme| %>
+    <div class="green card">
+      <div class="dimmable image">
+        <div class="ui dimmer">
+          <div class="content">
+            <div class="center">
+              <%= link_to 'Show', meme_path(meme),
+                class: 'ui inverted button'  %>
+            </div>
+          </div>
+        </div>
+        <%= image_tag meme.picture.url(:thumb) %>
+      </div>
+      <div class="content">
+        <a class="header"><%= meme.picture_file_name %></a>
+        <div class="meta">
+          <i class="tags icon"></i>
+          <%= meme.tags && meme.tags.join(', ') %>
+        </div>
+      </div>
+      <div class="extra content">
+        <span class="left floated">
+          <i class="write icon"></i>
+          <%= link_to 'Edit', edit_meme_path(meme) %>
+        </span>
+        <span class="right floated">
+          <i class="remove icon"></i>
+          <%= link_to 'Destroy', meme, method: :delete,
+            data: { confirm: 'Are you nuts?' } %>
+        </span>
+      </div>
+    </div>
+  <% end %>
+</div>

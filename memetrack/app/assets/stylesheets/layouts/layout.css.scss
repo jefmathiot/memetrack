@@ -4,23 +4,34 @@ header {
   position: relative;
   background: #222;
   z-index: 2;
-  @include box-shadow(rgba(0, 0, 0, 0.5) 0px 0px 2px);
+  @include box-shadow(rgba(0, 0, 0, 0.05) 0px 5px 2px);
+
   .wrapper {
+    position: relative;
     margin: 0 auto;
     color: #fff;
+
     .doge, h1 {
       @include inline-block;
-      margin: 1em 0;
-    }
-    h1{
+      margin: 0.5em 0;
       padding-left: 0.5em;
+    }
+
+    h1{
       font-weight: 400;
+    }
+
+    .ui.message{
+      position: absolute;
+      top: 70px;
+      right: 10px;
+      left: 10px;
     }
   }
 }
 
 header .wrapper, .container {
-  max-width: 900px;
+  max-width: 960px;
 }
 
 .container{
@@ -28,8 +39,12 @@ header .wrapper, .container {
   z-index: 1;
   background-color: #FFF;
   margin: 0em auto;
-  @include box-shadow(rgba(0, 0, 0, 0.5) 0px 0px 2px);
+  @include box-shadow(rgba(0, 0, 0, 0.05) 0px 0px 2px);
   border: 1px solid #DDD;
   border-top: none;
   padding: 2em 2em 7em;
+}
+
+.actions{
+  text-align: right;
 }
