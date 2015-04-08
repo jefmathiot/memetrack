@@ -1,49 +1,216 @@
 require 'test_helper'
 
 class MemesControllerTest < ActionController::TestCase
-  setup do
-    @meme = memes(:one)
+
+  let(:meme){
+    FactoryGirl.build(:meme).tap{|m| m.stubs(:id).returns(1)}
+  }
+
+  let(:memes){
+    [ meme ]
+  }
+
+  let(:meme_params) {
+    {
+      meme: {
+        picture: FactoryGirl.meme_attachment('meme.jpg'),
+        tags: 'category1, category2'
+      }
+    }.with_indifferent_access
+  }
+
+  def assert_html(response) ; end
+
+  def assert_json(response)
+    JSON.parse(response.body)
   end
 
-  test "should get index" do
-    get :index
-    assert_response :success
-    assert_not_nil assigns(:memes)
+  def expects_strong_params
+    MemesController::MemeParams.expects(:build).
+      with(has_key('meme')).
+      returns(meme_params[:meme])
   end
 
-  test "should get new" do
+  describe 'on getting index' do
+
+    before do
+      Meme.expects(:order).with({ created_at: :desc }).
+        returns( memes )
+    end
+
+    def ensure_index(format, params, &block)
+      yield if block_given?
+      get :index, params.merge(format: format)
+      response.status.must_equal 200
+      assigns(:memes).wont_be_nil
+      assert_template :index
+      send("assert_#{format}", response)
+    end
+
+    with_request_formats do |format|
+
+      it "returns all items" do
+        ensure_index(format, {})
+      end
+
+      it "filters the items using tags" do
+        ensure_index(format, q: 'category1, category2') do
+          memes.expects(:all_tags).with(%w(category1 category2)).
+            returns(memes)
+        end
+      end
+
+    end
+
+  end
+
+  it "gets new" do
     get :new
-    assert_response :success
+    assigns(:meme).must_be_instance_of Meme
+    assert_template :new
   end
 
-  test "should create meme" do
-    assert_difference('Meme.count') do
-      post :create, meme: {  }
+  describe 'on posting create' do
+
+    def assert_html_success(response)
+      assert_redirected_to memes_path
     end
 
-    assert_redirected_to meme_path(assigns(:meme))
-  end
-
-  test "should show meme" do
-    get :show, id: @meme
-    assert_response :success
-  end
-
-  test "should get edit" do
-    get :edit, id: @meme
-    assert_response :success
-  end
-
-  test "should update meme" do
-    patch :update, id: @meme, meme: {  }
-    assert_redirected_to meme_path(assigns(:meme))
-  end
-
-  test "should destroy meme" do
-    assert_difference('Meme.count', -1) do
-      delete :destroy, id: @meme
+    def assert_html_failure(response)
+      response.status.must_equal 200
+      assert_template :new
     end
 
-    assert_redirected_to memes_path
+    def assert_json_success(response)
+      response.status.must_equal 201
+      assert_json(response)
+      assert_template :show
+    end
+
+    def assert_json_failure(response)
+      response.status.must_equal 422
+      assert_json(response)
+    end
+
+    with_request_formats do |format|
+
+      with_result_states('create') do |result, message|
+
+        it "#{message} a meme" do
+          expects_strong_params
+          Meme.any_instance.expects(:save).returns(result==:success)
+          post :create, meme_params.merge(format: format)
+          assigns(:meme).wont_be_nil
+          send("assert_#{format}_#{result}", response)
+        end
+
+      end
+
+    end
+
   end
+
+  describe "setting a meme" do
+
+    def ensure_response
+      response.status.must_equal 200
+      assigns(:meme).must_equal meme
+    end
+
+    before do
+      Meme.expects(:find).with('1').returns(meme)
+    end
+
+    with_request_formats do |format|
+
+      it "shows the meme" do
+        get :show, id: 1, format: format
+        ensure_response
+        assert_template :show
+        send("assert_#{format}", response)
+      end
+
+      def assert_html_success(response)
+        assert_redirected_to memes_path
+      end
+
+      describe "on putting update" do
+
+        def assert_html_failure(response)
+          response.status.must_equal 200
+          assert_template :edit
+        end
+
+        def assert_json_success(response)
+          response.status.must_equal 200
+          assert_json(response)
+          assert_template :show
+        end
+
+        def assert_json_failure(response)
+          response.status.must_equal 422
+          assert_json(response)
+        end
+
+        with_result_states('update') do |result, message|
+
+          it "#{message} the meme" do
+            expects_strong_params
+            meme.expects(:update).with(has_key('picture')).
+              returns(result==:success)
+            put :update, meme_params.merge(format: format, id: 1)
+            assigns(:meme).wont_be_nil
+            send("assert_#{format}_#{result}", response)
+          end
+
+        end
+
+      end
+
+      describe "on deleting with destroy" do
+
+        def assert_json_success(response)
+          assert_redirected_to memes_path
+        end
+
+        it "destroys the meme" do
+          meme.expects :destroy
+          delete :destroy, id: 1
+          send("assert_#{format}_success", response)
+        end
+
+      end
+
+    end
+
+    it "edits the meme" do
+      get :edit, id: 1
+      ensure_response
+      assert_template :edit
+    end
+
+  end
+
+end
+
+describe MemesController::MemeParams do
+
+  let(:meme_params){ MemesController::MemeParams }
+
+  it 'normalizes the tags' do
+    meme_params.normalize_tags(' category1   , category2 ').
+      must_equal %w(category1 category2)
+  end
+
+  it 'creates and empty tag list' do
+    meme_params.normalize_tags(nil).must_equal []
+  end
+
+  it 'cleans the params' do
+    params = ActionController::Parameters.
+      new(meme: {foo: 'bar', picture: '(ಠ_ಠ)_%', tags: '1, 2'})
+    meme_params.build(params).
+      must_equal({'picture'=> '(ಠ_ಠ)_%', 'tags'=> %w(1 2)})
+  end
+
 end

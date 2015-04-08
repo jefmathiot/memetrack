@@ -5,7 +5,9 @@ class MemesController < ApplicationController
   # GET /memes.json
   def index
     @memes = Meme.order(created_at: :desc)
-    @memes = @memes.all_tags(normalize_tags(params[:q])) if params[:q].present?
+    if params[:q].present?
+      @memes = @memes.all_tags(MemeParams.normalize_tags(params[:q]))
+    end
   end
 
   # GET /memes/1
@@ -29,8 +31,10 @@ class MemesController < ApplicationController
 
     respond_to do |format|
       if @meme.save
-        format.html { redirect_to memes_url,
-          notice: 'The image was successfully saved, yay!' }
+        format.html {
+          redirect_to memes_url,
+            notice: 'The image was successfully saved, yay!'
+          }
         format.json { render :show, status: :created, location: @meme }
       else
         format.html {
@@ -71,6 +75,24 @@ class MemesController < ApplicationController
     end
   end
 
+  class MemeParams
+
+    class << self
+
+      def build(params)
+        params.require(:meme).tap{|meme|
+          meme[:tags] = normalize_tags(params[:meme][:tags])
+        }.permit(:picture, {tags: []})
+      end
+
+      def normalize_tags(param)
+        (param || '').split(',').map(&:strip)
+      end
+
+    end
+
+  end
+
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_meme
@@ -79,12 +101,7 @@ class MemesController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def meme_params
-      params[:meme] && params[:meme].tap{|meme|
-        meme[:tags]=normalize_tags(params[:meme][:tags])
-      }.permit(:picture, {tags: []})
+      MemeParams.build(params)
     end
 
-    def normalize_tags(param)
-      (param || '').split(',').map(&:strip)
-    end
 end
