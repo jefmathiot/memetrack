@@ -10,7 +10,8 @@
     <%= field(@meme, :tags) do %>
       <div class="ui right labeled left icon input">
         <i class="ui tags icon"></i>
-        <%= f.text_field :tags, placeholder: 'Commas-separated list of tags' %>
+        <%= f.text_field :tags, placeholder: 'Commas-separated list of tags',
+          value: @meme.tags? ? @meme.tags.join(', '): '' %>
         <div class="ui tag label">Tags</div>
       </div>
     <% end %>
