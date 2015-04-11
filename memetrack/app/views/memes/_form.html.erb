@@ -5,7 +5,7 @@
         <%= f.file_field :picture, class: 'ui input' %>
       <% end %>
     <% else %>
-    <%= image_tag @meme.picture.url(:thumb) %>
+      <%= image_tag @meme.picture.url(:thumb) %>
     <% end %>
     <%= field(@meme, :tags) do %>
       <div class="ui right labeled left icon input">

@@ -4,10 +4,7 @@ class MemesController < ApplicationController
   # GET /memes
   # GET /memes.json
   def index
-    @memes = Meme.order(created_at: :desc)
-    if params[:q].present?
-      @memes = @memes.all_tags(MemeParams.normalize_tags(params[:q]))
-    end
+    @memes = search_tags Meme.order(created_at: :desc)
   end
 
   # GET /memes/1
@@ -31,17 +28,10 @@ class MemesController < ApplicationController
 
     respond_to do |format|
       if @meme.save
-        format.html {
-          redirect_to memes_url,
-            notice: 'The image was successfully saved, yay!'
-          }
-        format.json { render :show, status: :created, location: @meme }
+        render_success format, :created,
+                       'The image was successfully saved, yay!'
       else
-        format.html {
-          flash.now[:alert]='Unable to save the image'
-          render :new
-        }
-        format.json { render json: @meme.errors, status: :unprocessable_entity }
+        render_failure format, :new, 'Unable to save the image'
       end
     end
   end
@@ -51,15 +41,9 @@ class MemesController < ApplicationController
   def update
     respond_to do |format|
       if @meme.update(meme_params)
-        format.html { redirect_to memes_url,
-          notice: 'The tags were successfully updated, yay!' }
-        format.json { render :show, status: :ok, location: @meme }
+        render_success format, :ok, 'The tags were successfully updated, yay!'
       else
-        format.html {
-          flash.now[:alert]='Unable to save the tags'
-          render :edit
-        }
-        format.json { render json: @meme.errors, status: :unprocessable_entity }
+        render_failure format, :edit, 'Unable to save the tags'
       end
     end
   end
@@ -69,39 +53,59 @@ class MemesController < ApplicationController
   def destroy
     @meme.destroy
     respond_to do |format|
-      format.html { redirect_to memes_url,
-        notice: 'The image was successfully destroyed.' }
+      format.html do
+        redirect_to memes_url,
+                    notice: 'The image was successfully destroyed.'
+      end
       format.json { head :no_content }
     end
   end
 
   class MemeParams
-
     class << self
-
       def build(params)
-        params.require(:meme).tap{|meme|
+        tags = { tags: [] }
+        params.require(:meme).tap do |meme|
           meme[:tags] = normalize_tags(params[:meme][:tags])
-        }.permit(:picture, {tags: []})
+        end.permit(:picture, tags)
       end
 
       def normalize_tags(param)
         (param || '').split(',').map(&:strip)
       end
-
     end
-
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_meme
-      @meme = Meme.find(params[:id])
-    end
 
-    # Never trust parameters from the scary internet, only allow the white list through.
-    def meme_params
-      MemeParams.build(params)
+  def render_success(format, status, message)
+    format.html do
+      redirect_to memes_url, notice: message
     end
+    format.json { render :show, status: status, location: @meme }
+  end
 
+  def render_failure(format, template, message)
+    format.html do
+      flash.now[:alert] = message
+      render template
+    end
+    format.json { render json: @meme.errors, status: :unprocessable_entity }
+  end
+
+  # Use callbacks to share common setup or constraints between actions.
+  def set_meme
+    @meme = Meme.find(params[:id])
+  end
+
+  # Never trust parameters from the scary internet, only allow the white list
+  # through.
+  def meme_params
+    MemeParams.build(params)
+  end
+
+  def search_tags(query)
+    return query unless params[:q].present?
+    query.all_tags(MemeParams.normalize_tags(params[:q]))
+  end
 end
