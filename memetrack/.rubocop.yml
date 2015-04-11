@@ -1,0 +1,10 @@
+AllCops:
+  Include:
+    - Rakefile
+    - config.ru
+  Exclude:
+    - db/schema.rb
+    - config/application.rb
+    - config/environments/*.rb
+Style/Documentation:
+  Enabled: false
