@@ -1,0 +1,33 @@
+datastore:
+  image: postgres
+  command: bin/true
+  volumes:
+   - /var/lib/postgresql/data
+database:
+  image: postgres
+  command: postgres
+  volumes_from:
+    - datastore
+  environment:
+    POSTGRES_PASSWORD: "changeme"
+app:
+  image: memetrack/app
+  command: "bundle exec rails s -b 0.0.0.0"
+  volumes:
+    - .:/memetrack
+  links:
+    - database
+  environment:
+    POSTGRES_PASSWORD: "changeme"
+    RAILS_ENV:
+    SECRET_KEY_BASE:
+  ports:
+    - '3000'
+web:
+  image: memetrack/web
+  volumes:
+    - ./public:/memetrack/public
+  links:
+    - app
+  ports:
+    - '80'
