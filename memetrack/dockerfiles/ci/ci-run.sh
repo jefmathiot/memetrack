@@ -48,13 +48,11 @@ rm -rf log/*
 case "$1" in
   'unit-test')
     memetrack_startup 'test'
-    memetrack_rake 'db:create'
-    memetrack_rake 'test'
+    memetrack_rake 'db:create test'
     ;;
   'end-to-end')
     memetrack_startup 'production'
-    memetrack_rake 'assets:precompile'
-    memetrack_rake 'db:setup'
+    memetrack_rake 'db:setup assets:precompile'
     wait_for_webapp 30
     cd integration
     # Running "outside" Docker (we hit the nested Web container)
