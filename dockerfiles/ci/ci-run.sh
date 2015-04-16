@@ -62,7 +62,7 @@ case "$1" in
     ;;
   'static-analysis')
     memetrack_startup
-    memetrack_run 'rubocop'
+    memetrack_run 'rubocop -f html > tmp/static-analysis.html'
     ;;
   *)
     echo "Usage : $0 <unit-test|end-to-end|static-analysis>"
