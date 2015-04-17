@@ -103,7 +103,7 @@
 
 						~ 7 500 integration jobs in a year <!-- .element class="fragment fade-in" -->
 
-						~ 10% of them failing* <!-- .element class="fragment fade-in" -->
+						~ 10% of them failing <!-- .element class="fragment fade-in" -->
 					</script>
 				</section>
 				<section data-markdown>
@@ -165,9 +165,9 @@
 				</section>
 				<section data-markdown>
 					<script type="text/template">
-						## Requirements to the minimum
-						* Docker & Docker Compose (more on this later)  <!-- .element class="fragment fade-in" -->
-						* JenkinsCI to pull the code & schedule jobs <!-- .element class="fragment fade-in" -->
+					## Requirements to the minimum
+					* Docker & Docker Compose (more on this later)  <!-- .element class="fragment fade-in" -->
+					* JenkinsCI to pull the code & schedule jobs <!-- .element class="fragment fade-in" -->
 					</script>
 				</section>
 				<section data-markdown>
@@ -538,6 +538,13 @@
 						```
 					</section>
 					<section data-markdown>
+						### Clean things up
+						```bash
+						$ docker-compose stop && \
+							docker-compose rm --force
+						```
+					</section>
+					<section data-markdown>
 						### Run
 
 						Unit tests
@@ -570,7 +577,6 @@
 
 						* Docker
 						* Jenkins CI
-
 					</section>
 					<section data-markdown>
 						### Push to the Docker Hub
