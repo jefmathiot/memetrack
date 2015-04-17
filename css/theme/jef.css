@@ -337,11 +337,11 @@ section.me .social a, section.me .social a:hover, section.me .social a:visited{
 }
 
 li.twitter{
-  background: url(/images/twitter-icon.png) no-repeat;
+  background: url(images/twitter-icon.png) no-repeat;
 }
 
 li.github{
-  background: url(/images/github-icon.png) no-repeat;
+  background: url(images/github-icon.png) no-repeat;
 }
 
 section.notify-warn img, section.our-app img, section.compose img{
