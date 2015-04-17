@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Continuous Integration - Docker in Action</title>
+
+		<meta name="description" content="Continuous Integration - Docker in Action">
+		<meta name="author" content="Jef Mathiot">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link href='http://fonts.googleapis.com/css?family=Lato:400,300,700,900' rel='stylesheet' type='text/css'>
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/jef.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+			<div class="slides">
+				<section data-markdown class="title">
+					# Continuous Integration
+
+					![Docker](/images/docker.png)
+
+					### Docker in Action
+
+					2015-04-16 @DockerAix
+				</section>
+				<section class="me">
+					<h2>Who am I?</H2>
+						<img src="/images/jef.png"><h3>Jef Mathiot</h3>
+					<div class="column">
+						<ul>
+							<li>Co-founder & CINO <a href="https://twitter.com/ServeBox">@ServeBox</a></li>
+							<li>Polyglot programmer</li>
+							<li>Dev by choice, Op out of necessity</li>
+							<li>Open-Source enthusiast, creator of <a href="http://electricsheep.io">ElectricSheep.IO</a></li>
+							<li>Rookie <a href="https://twitter.com/LabAixBidouille">@LabAixBidouille</a></li>
+							<li><a href="http://nonblocking.info">http://nonblocking.info</a></li>
+						</ul>
+						<ul class="social">
+							<li class="github"><a href="https://github.com/jefmathiot">jefmathiot</a></li>
+							<li class="twitter"><a href="https://twitter.com/TouitTouit">@TouitTouit</a></li>
+						</ul>
+					</div>
+				</section>
+				<section data-markdown class="shipping">
+					## Docker
+					### It's all about shipping Software...
+					![Container](/images/container.png)
+				</section>
+				<section data-markdown>
+					<script type="text/template">
+					## Docker
+					### It's all about shipping Software
+					* to a PaaS <!-- .element class="fragment fade-in" -->
+					* to a cluster (distributed computing) <!-- .element class="fragment fade-in" -->
+					* to users (staging & production) <!-- .element class="fragment fade-in" -->
+					* to build servers <!-- .element class="fragment fade-in" -->
+					* to developers <!-- .element class="fragment fade-in" -->
+					* ... <!-- .element class="fragment fade-in" -->
+					</script>
+				</section>
+				<section data-markdown>
+					## Continuous Delivery
+					### Be always **ready to deploy**
+				</section>
+				<section data-markdown>
+					## Continuous Integration
+					### Control Quality on **each change**
+
+					Source control, TDD & build automation
+				</section>
+				<section data-markdown>
+					<script type="text/template">
+						## Numbers
+						### Let's have a look at numbers
+						A team of 6 developers <!-- .element class="fragment fade-in" -->
+
+						30 commits every day on average <!-- .element class="fragment fade-in" -->
+
+						~ 7 500 integration jobs in a year <!-- .element class="fragment fade-in" -->
+
+						~ 10% of them failing* <!-- .element class="fragment fade-in" -->
+					</script>
+				</section>
+				<section data-markdown>
+					## Return on Investment
+					### That's ~ **750 problems**
+					that never made it to the production
+				</section>
+				<section data-markdown>
+					## Continuous Integration
+					### An environment to setup & maintain
+				</section>
+				<section data-markdown>
+					<script type="text/template">
+						## We've tried
+						Bare metal / OS level <!-- .element class="fragment fade-in" -->
+
+						Virtual Machines (Virtualbox) <!-- .element class="fragment fade-in" -->
+
+						Linux Containers (LXC) <!-- .element class="fragment fade-in" -->
+					</script>
+				</section>
+				<section data-markdown>
+					<script type="text/template">
+						## Moving to Docker
+						Performances, ~ instant startup times <!-- .element class="fragment fade-in" -->
+
+						No need to preallocate resources (CPU, RAM) <!-- .element class="fragment fade-in" -->
+
+						Easy to build, reuse & share images (private registry) <!-- .element class="fragment fade-in" -->
+
+						Application-centric (~ building blocks) <!-- .element class="fragment fade-in" -->
+
+						Developer-friendly (Docker Compose) <!-- .element class="fragment fade-in" -->
+					</script>
+				</section>
+				<section data-markdown>
+					<script type="text/template">
+						## Moving to Docker
+						Yet Another Technology to Learn &reg;
+
+						...but it's built with simplicity in mind<!-- .element class="fragment fade-in" -->
+					</script>
+				</section>
+				<section data-markdown class="our-app">
+					## Our example app
+					MemeTrack: Share with your kids all the ~~stupid~~ cool stuff you find
+					on the Web
+
+					![Memetrack](/images/memetrack.png)
+
+					Source code available [here](https://github.com/jefmathiot/memetrack)
+				</section>
+				<section data-markdown>
+					<script type="text/template">
+					## A mission critical app
+					(at least for me and my 3 daughters) <!-- .element class="fragment fade-in" -->
+					### CI to the rescue! <!-- .element class="fragment fade-in" -->
+					</script>
+				</section>
+				<section data-markdown>
+					<script type="text/template">
+						## Requirements to the minimum
+						* Docker & Docker Compose (more on this later)  <!-- .element class="fragment fade-in" -->
+						* JenkinsCI to pull the code & schedule jobs <!-- .element class="fragment fade-in" -->
+					</script>
+				</section>
+				<section data-markdown>
+					<script type="text/template">
+					## It's all part of the Plan
+					* "contain" our application stack <!-- .element class="fragment fade-in" -->
+					* make developers happy  <!-- .element class="fragment fade-in" -->
+					* setup our CI suite <!-- .element class="fragment fade-in" -->
+					* make our CI environment portable <!-- .element class="fragment fade-in" -->
+					</script>
+				</section>
+				<section>
+					<section data-markdown>
+						<script type="text/template">
+						## Application Stack
+						Ruby  <!-- .element class="fragment fade-in" -->
+
+						PostgreSQL <!-- .element class="fragment fade-in" -->
+
+						Nginx <!-- .element class="fragment fade-in" -->
+						</script>
+					</section>
+					<section data-markdown>
+						### Ruby
+					</section>
+					<section data-markdown>
+						#### Dockerfile - the good parts
+						```dockerfile
+						# dockerfiles/app/Dockerfile
+						# Our base image
+						FROM ruby:2.2.0
+
+						# We'll work here
+						WORKDIR /memetrack
+
+						# Watch for updates and install the dependencies
+						COPY Gemfile* /memetrack/
+						RUN bundle install
+
+						# The app will bind to this port
+						EXPOSE 3000
+						```
+						That's it!
+					</section>
+					<section data-markdown>
+						#### Build the image
+						```bash
+						$ docker build -f dockerfiles/app/Dockerfile -t memetrack/app .
+						```
+					</section>
+					<section data-markdown>
+						### PostgreSQL
+					</section>
+					<section data-markdown>
+						#### "Stock" PostgreSQL image
+						Docker will pull it from the Docker Hub
+						```bash
+						$ docker run --name database -d \
+							-e POSTGRES_PASSWORD='changeme' \
+							postgres
+						```
+						Let's try to connect:
+						```shell
+						$ PGPASSWORD=changeme psql -U postgres -h 127.0.0.1 -c '\list'
+						```
+					</section>
+					<section data-markdown>
+						#### Where is PostgreSQL?
+						![Where is Postgres](/images/waldo.jpg)
+					</section>
+					<section data-markdown>
+						#### It's in Docker's virtual subnet:
+						```shell
+						# Ask Docker the IP address the container is bound to
+						$ docker inspect --format='{{.NetworkSettings.IPAddress}}' \
+							database
+						# => A random address, such as 172.17.0.42
+
+						$ PGPASSWORD=changeme psql -U postgres -h 172.17.0.42 -c '\list'
+						```
+					</section>
+					<section data-markdown>
+						#### Docker links
+						```bash
+						$ docker run --link database:database -t memetrack/app env \
+							| grep DATABASE_PORT
+						```
+						An easy way to share network information between containers:
+						```ruby
+						# database.yml
+						defaults: &defaults
+							adapter: postgresql
+							host: <%= ENV['DATABASE_PORT_5432_TCP_ADDR'] %>
+							port: <%= ENV['DATABASE_PORT_5432_TCP_PORT'] %>
+							username: postgres
+							password: <%= ENV['POSTGRES_PASSWORD'] %>
+						```
+					</section>
+					<section data-markdown>
+						#### Docker links
+						Let's ask our app to create the database:
+						```bash
+						$ docker run -v `pwd`:/memetrack --link database:database \
+							-e POSTGRES_PASSWORD=changeme \
+							-t memetrack/app \
+							rake db:setup
+						```
+					</section>
+					<section data-markdown>
+						### Run the app
+						```bash
+						$ docker run -d -v `pwd`:/memetrack --link database:database \
+							--name app \
+							-e POSTGRES_PASSWORD=changeme \
+							-t memetrack/app \
+							rails s -b 0.0.0.0
+						```
+					</section>
+					<section data-markdown>
+						### Nginx
+					</section>
+					<section data-markdown>
+						#### Dockerfile
+						```docker
+						# dockerfiles/nginx/Dockerfile
+						# Add server configuration
+						ADD memetrack.conf /etc/nginx/sites-enabled/default
+
+						ENTRYPOINT ["nginx"]
+						```
+					</section>
+					<section data-markdown>
+						#### Configuration
+						Docker links, once again...
+						```nginxconf
+						# memetrack.conf
+						server {
+							# Docker link
+							set_by_lua $upstream_address
+								'return os.getenv("APP_PORT_3000_TCP_ADDR")';
+							set_by_lua $upstream_port
+								'return os.getenv("APP_PORT_3000_TCP_PORT")';
+							...
+							location @app {
+								...
+								proxy_pass $upstream_address:$upstream_port;
+							}
+						}
+						```
+					</section>
+					<section data-markdown>
+						#### Build the image
+						```bash
+						$ docker build -f dockerfiles/nginx/Dockerfile -t memetrack/web \
+							dockerfiles/nginx
+						```
+					</section>
+					<section data-markdown>
+						#### Launch the server
+						```bash
+						$ docker run -d -v `pwd`/public:/memetrack/public \
+							--link app:app \
+							--name web \
+							-t memetrack/web
+						```
+						...and a browser:
+						```bash
+						$ sensible-browser $(docker inspect  \
+							--format='{{.NetworkSettings.IPAddress}}' web)
+						```
+					</section>
+				</section>
+				<section>
+					<section data-markdown class="compose">
+						<script type="text/template">
+							## Making developers happy
+							<div class="fragment fade-in">
+								Docker Compose: bringing the pieces together
+								<div>![Mondrian](/images/mondrian.jpg)</div>
+							</div>
+						</script>
+					</section>
+					<section data-markdown>
+						### Clean things up
+						```bash
+						$ docker stop $(docker ps -q) && \
+							docker rm $(docker ps -a -q) && \
+							docker rmi $(docker images -q -f dangling=true)
+						```
+					</section>
+					<section data-markdown>
+						### Data-volume Container
+						```
+						# docker-compose.yml
+						datastore:
+							image: 'postgres'
+							command: '/bin/true'
+							volumes:
+								- '/var/lib/postgresql/data'
+						```
+					</section>
+					<section data-markdown>
+						### Database server
+						```
+						# docker-compose.yml
+						database:
+							image: 'postgres'
+							command: 'postgres'
+							volumes_from:
+								- 'datastore'
+							environment:
+								POSTGRES_PASSWORD: 'changeme'
+						```
+					</section>
+					<section data-markdown>
+						### Rails app
+						```
+						# docker-compose.yml
+						app:
+							image: 'memetrack/app'
+							command: 'rails s -b 0.0.0.0'
+							volumes:
+								- '.:/memetrack'
+							links:
+								- 'database'
+							environment:
+								POSTGRES_PASSWORD: 'changeme'
+								RAILS_ENV:
+								SECRET_KEY_BASE:
+							ports:
+								- '3000'
+						```
+					</section>
+					<section data-markdown>
+						### Web frontend
+						```
+						# docker-compose.yml
+						web:
+							image: 'memetrack/web'
+							volumes:
+								- './public:/memetrack/public'
+							links:
+								- 'app'
+							ports:
+								- '80'
+						```
+					</section>
+					<section data-markdown>
+						### Watch out for stones
+						Start all the containers
+						```bash
+						$ export RAILS_ENV=development
+						$ docker-compose up -d
+						```
+						... seed the database
+						```bash
+						$ docker-compose run app rake db:reset
+						```
+						... and browse the app
+						```bash
+						$ sensible-browser $(docker-compose port web 80)
+						```
+					</section>
+				</section>
+				<section>
+					<section data-markdown>
+						## Our CI suite
+					</section>
+					<section data-markdown>
+						### Unit Tests
+						Pretty easy, run inside the "app" container:
+						```shell
+						$ RAILS_ENV=test docker-compose run app \
+							rake db:reset test
+						```
+
+						Coverage report: `coverage/index.html`
+					</section>
+					<section data-markdown>
+						### Static Code Analysis
+						Same approach, run inside the "app" container:
+						```shell
+						$ docker-compose run app \
+							bash -c 'rubocop -f html > tmp/static-analysis.html'
+						```
+
+						Analysis report: `tmp/static-analysis.html`
+					</section>
+					<section data-markdown>
+						### Integration tests
+
+						```shell
+						$ cucumber
+						```
+
+						This one does not run in a container (yet)
+					</section>
+				</section>
+				<section>
+					<section data-markdown>
+						## Make the whole CI environment portable
+
+						![Is such a thing possible](/images/possible.jpg)
+
+						Extra Bonus: parallel runs without additional configuration.
+					</section>
+					<section data-markdown>
+						### What we have so far
+						![Docker](/images/dind-1.png)
+					</section>
+					<section data-markdown>
+						### Docker in Docker
+						![Docker in Docker](/images/dind-2.png)
+					</section>
+					<section data-markdown>
+						### Docker in Docker
+						```docker
+						#
+						# dockerfiles/ci/Dockerfile
+						...
+						RUN apt-get install -qqy lxc-docker
+						ADD https://github.com/(...)/docker-compose-Linux-x86_64 \
+							/usr/local/bin/docker-compose
+						...
+						# Install Cucumber's dependencies
+						RUN bundle install --gemfile=/memetrack/integration/Gemfile
+						...
+						```
+					</section>
+					<section data-markdown>
+						### Docker in Docker
+						```docker
+						# dockerfiles/app/Dockerfile
+						...
+						# Docker in Docker wrapper
+						ADD ./dockerfiles/ci/wrapdocker /usr/local/bin/wrapdocker
+
+						# Continuous Integration suite
+						ADD ./dockerfiles/ci/ci-run.sh /usr/local/bin/ci-run
+						...
+						```
+						[Credit where credit is due](https://github.com/jpetazzo/dind) @jpetazzo
+					</section>
+					<section data-markdown>
+						### Runner script*
+						```bash
+						# ci-run.sh
+						case "$1" in
+							'end-to-end')
+								export RAILS_ENV=production
+
+								# Start database, app & web services
+								docker-compose up -d
+
+								# Prepare production-like assets & database
+								docker-compose run app rake db:setup assets:precompile
+
+								# Run!
+								cd integration
+								cucumber
+						```
+						\* it's a bit simplified
+					</section>
+					<section data-markdown>
+						### Build
+						```shell
+						docker build -f dockerfiles/ci/Dockerfile -t memetrack/ci .
+						```
+					</section>
+					<section data-markdown>
+						### Run
+
+						Unit tests
+						```shell
+						docker run --privileged -v /var/lib/docker:/var/lib/docker \
+							-v `pwd`:/memetrack -t memetrack/ci \
+							ci-run unit-test
+						```
+
+						... or static code analysis
+						```shell
+						docker run --privileged -v /var/lib/docker:/var/lib/docker \
+							-v `pwd`:/memetrack -t memetrack/ci \
+							ci-run static-analysis
+						```
+
+						... or the full monty.
+						```shell
+						docker run --privileged -v /var/lib/docker:/var/lib/docker \
+							-v `pwd`:/memetrack -t memetrack/ci \
+							ci-run end-to-end
+						```
+					</section>
+				</section>
+				<section>
+					<section data-markdown>
+						## The CI server
+
+						Our setup:
+
+						* Docker
+						* Jenkins CI
+
+					</section>
+					<section data-markdown>
+						### Push to the Docker Hub
+
+						```shell
+						docker push memetrack/app
+						docker push memetrack/web
+						docker push memetrack/ci
+						```
+
+						Same mechanism for a private registry
+					</section>
+					<section data-markdown>
+						### Configuring a job
+
+						... is as simple as:
+
+						```bash
+						docker pull memetrack/ci:latest
+						docker run --privileged \
+							-v /var/lib/docker_${EXECUTOR_NUMBER}:/var/lib/docker \
+							-v `pwd`:/memetrack memetrack/ci ci-run unit-test
+						```
+					</section>
+				</section>
+				<section data-markdown class="mission">
+					## Mission accomplished
+
+					* ![Green Ball](/images/greenball.png) happy developers
+					* ![Green Ball](/images/greenball.png) a portable CI environment
+					* ![Green Ball](/images/greenball.png) minimal dependencies & configuration
+				</section>
+				<section data-markdown>
+					## Thanks!
+
+					Questions?
+				</section>
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
