@@ -329,7 +329,12 @@ section.me ul.social li{
   height: 50px;
   padding-left: 2em;
   font-size: 0.8em;
-  margin-left: 2em;
+  margin: 1em;
+}
+
+section.me .pjlr img{
+  border-radius: 5px;
+  border: 1px solid white;
 }
 
 section.me .social a, section.me .social a:hover, section.me .social a:visited{
